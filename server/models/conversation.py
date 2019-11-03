@@ -1,5 +1,5 @@
 from mongoengine import *
-from server.mongo.user import User
+from server.models.user import User
 from datetime import datetime
 
 

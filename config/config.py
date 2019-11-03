@@ -1,15 +1,16 @@
-import os
-config = {
-    "development": "config.DevelopmentConfig",
-    "testing": "config.TestingConfig",
-    "default": "config.DevelopmentConfig"
-}
+class Config(object):
+    DEBUG = False
+    TESTING = False
+    DATABASE_URI = 'mongodb://127.0.0.1:27017/chat'
 
 
-def configure_app(app):
-    config_name = os.getenv('FLASK_CONFIGURATION', 'default')
+class ProductionConfig(Config):
+    pass
 
-    print("config name ", config_name)
 
-    app.config.from_object(config[config_name]) # object-based default configuration
-    #app.config.from_pyfile('config.cfg', silent=True) # instance-folders configuration
+class DevelopmentConfig(Config):
+    DEBUG = True
+
+
+class TestingConfig(Config):
+    TESTING = True

@@ -1,7 +1,7 @@
 from mongoengine import *
 from datetime import datetime
-from server.mongo.user import User
-from server.mongo.conversation import Conversation
+from server.models.user import User
+from server.models.conversation import Conversation
 
 
 class Message(Document):
