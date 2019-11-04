@@ -1,4 +1,7 @@
 import React, { Component } from 'react'
+import cookie from 'react-cookies';
+import {Link} from "react-router-dom";
+ import { AlertDanger, AlertPrimary } from './Alerts'
 
 class Profile extends Component {
     constructor() {
@@ -9,14 +12,32 @@ class Profile extends Component {
         }
     }
 
-    componentDidMount() {
-    fetch('/profile')
-      .then(response => response.json())
-      .then(data => this.setState({ data }));
+    componentDidMount(){
+        console.log(cookie.load('token'))
+        if (cookie.load('token')) {
+
+            fetch("http://localhost:3000/profile", {
+                method: 'GET',
+                headers: new Headers({
+                    Authorization: 'Bearer ' + cookie.load('token')
+                }),
+            })
+                .then(response => response.json())
+                .then(resData => {
+                    console.log(JSON.stringify(resData))
+                    this.setState({name: resData.name, email: resData.email});
+                })
+        }
     }
 
+
     render () {
-        return (
+
+        const notLogin = (
+            AlertDanger("You are not loged in!")
+        )
+
+        const isLogin = (
             <div className="container">
                 <div className="jumbotron mt-5">
                     <div className="col-sm-8 mx-auto">
@@ -36,6 +57,11 @@ class Profile extends Component {
                     </table>
                 </div>
             </div>
+        )
+
+
+        return (
+            cookie.load('token') ? isLogin : notLogin
         )
     }
 }

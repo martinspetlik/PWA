@@ -26,10 +26,10 @@ class UserRegistration(Resource):
         user_name_exist = User.objects(name=name).first()
 
         if user:  # if a user is found, we want to redirect back to signup page so user can try again
-            return jsonify({"success": False, "message": 'User with this email address already exists'})
+            return jsonify({"success": False, "message": 'User with this email address already exists', "email": False})
 
         if user_name_exist:
-            return jsonify({"success": False, "message": 'User with this name already exists'})
+            return jsonify({"success": False, "message": 'User with this name already exists', "email": True})
 
         try:
             # create new user with the form data. Hash the password so plaintext version isn't saved.
@@ -76,7 +76,7 @@ class UserLogin(Resource):
             else:
                 return {"success": False, 'message': 'Wrong credentials'}
         else:
-            result = jsonify({"success": False, "message": "Invalid user email"})
+            result = {"success": False, "message": "Invalid user email"}
 
         # access token has 15 minutes lifetime
         # print("access token ", access_token)
@@ -87,14 +87,20 @@ class UserLogin(Resource):
 class UserProfile(Resource):
     @jwt_required
     def get(self):
+        print("PROFILE")
         current_user = get_jwt_identity()
+
+        print("current user ", current_user)
+
         return {"name": current_user['name'], "email": current_user['email']}
 
 
 class UserLogoutAccess(Resource):
     @jwt_required
     def post(self):
+        print("user logout")
         jti = get_raw_jwt()['jti']
+
         try:
             revoked_token = RevokedTokens(jti=jti)
             revoked_token.save()

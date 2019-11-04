@@ -1,10 +1,12 @@
 import React, { Component } from 'react'
 import { Link, withRouter } from 'react-router-dom'
 
+import cookie from 'react-cookies'
+
 class Navbar extends Component {
     logOut (e) {
         e.preventDefault()
-        localStorage.removeItem('usertoken')
+        cookie.remove('token')
         this.props.history.push(`/`)
     }
 
@@ -55,7 +57,7 @@ class Navbar extends Component {
                             </Link>
                         </li>
                     </ul>
-                    {localStorage.usertoken ? userLink : loginRegLink}
+                    {cookie.load('token') ? userLink : loginRegLink}
                 </div>
             </nav>
         )

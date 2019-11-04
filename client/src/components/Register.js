@@ -35,7 +35,9 @@ class Register extends Component {
             //console.log(res.success)
             //console.log(res.message)
             if(!res.success) {
+                this.state.password = ""
                 this.setState({ message: AlertDanger(res.message) });
+
             } else {
                 //this.state.message = AlertPrimary(res.message)
                 this.props.history.push(`/`)

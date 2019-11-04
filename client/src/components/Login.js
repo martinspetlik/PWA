@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import { login } from './UserFunctions'
-import { useCookies } from 'react-cookie';
 
 import Cookies from 'universal-cookie';
 import {AlertDanger} from "./Alerts";
+
+import cookie from 'react-cookies';
 
 class Login extends Component {
     constructor() {
@@ -37,12 +38,15 @@ class Login extends Component {
             console.log(res)
 
             if (res.success) {
-                 const cookies = new Cookies();
-                cookies.set('token', res.access_token, { path: '/' , httpOnly:true});
-                console.log(cookies.get('token'));
+                //const cookies = new Cookies();
+                //cookies.set('token', res.access_token, { path: '/' , httpOnly:true});
+                cookie.save("token", res.access_token, {path: "/", HttpOnly:true});
+
 
                 this.props.history.push('/profile')
             } else {
+                this.state.email = ""
+                this.state.password = ""
                 this.setState({ message: AlertDanger(res.message) });
             }
         })
