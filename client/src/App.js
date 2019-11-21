@@ -6,6 +6,7 @@ import Landing from './components/Landing'
 import Login from './components/Login'
 import Register from './components/Register'
 import Profile from './components/Profile'
+import Chat from './components/Chat'
 
 class App extends Component {
   render () {
@@ -14,11 +15,10 @@ class App extends Component {
         <div className="App">
           <NavBar />
           <Route exact path="/" component={Landing} />
-          <div className="container">
             <Route exact path="/registration" component={Register} />
             <Route exact path="/" component={Login} />
             <Route exact path="/profile" component={Profile} />
-          </div>
+            <Route exact path="/chat/:id" component={Chat} />
         </div>
       </Router>
     );

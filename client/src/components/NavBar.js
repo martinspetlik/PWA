@@ -1,9 +1,12 @@
 import React, { Component } from 'react'
 import { Link, withRouter } from 'react-router-dom'
+import Navbar from 'react-bootstrap/Navbar'
+import Nav from 'react-bootstrap/Nav'
+import NavDropdown from 'react-bootstrap/NavDropdown'
 
 import cookie from 'react-cookies'
 
-class Navbar extends Component {
+class NavBar extends Component {
     logOut (e) {
         e.preventDefault()
         cookie.remove('token')
@@ -37,19 +40,8 @@ class Navbar extends Component {
         )
 
         return (
-            <nav className="navbar navbar-expand-lg navbar-dark bg-dark rounded">
-                <button className="navbar-toggler"
-                    type="button"
-                    data-toggle="collapse"
-                    data-target="#navbar1"
-                    aria-controls="navbar1"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation">
-                    <span className="navbar-toggler-icon"></span>
-                </button>
-
-                <div className="collapse navbar-collapse justify-content-md-center"
-                    id="navbar1">
+            <nav className="navbar fixed-top navbar-expand navbar-dark bg-dark">
+                <div className="collapse navbar-collapse" id="navbarNav">
                     <ul className="navbar-nav">
                         <li className="nav-item">
                             <Link to="/" className="nav-link">
@@ -60,8 +52,12 @@ class Navbar extends Component {
                     {cookie.load('token') ? userLink : loginRegLink}
                 </div>
             </nav>
+
+
+
+
         )
     }
 }
 
-export default withRouter(Navbar)
+export default withRouter(NavBar)

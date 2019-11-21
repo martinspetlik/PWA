@@ -1,10 +1,9 @@
 import React, { Component } from 'react'
 import { login } from './UserFunctions'
-
-import Cookies from 'universal-cookie';
 import {AlertDanger} from "./Alerts";
 
 import cookie from 'react-cookies';
+import {Redirect} from "react-router-dom";
 
 class Login extends Component {
     constructor() {
@@ -38,18 +37,43 @@ class Login extends Component {
             console.log(res)
 
             if (res.success) {
-                //const cookies = new Cookies();
-                //cookies.set('token', res.access_token, { path: '/' , httpOnly:true});
                 cookie.save("token", res.access_token, {path: "/", HttpOnly:true});
+                cookie.save("current_user_name", res.user_name, {path: "/", HttpOnly:true});
 
-
-                this.props.history.push('/profile')
             } else {
+
                 this.state.email = ""
                 this.state.password = ""
                 this.setState({ message: AlertDanger(res.message) });
+                return false
             }
         })
+
+        this.getChats()
+
+        Object.keys(cookie.load("chats")).map(key => (
+            this.props.history.push("/chat/" + key)
+        ))
+
+
+
+    }
+
+    getChats() {
+        //console.log(cookie.load('token'))
+        if (cookie.load('token')) {
+
+            fetch("http://localhost:3000/chats", {
+                method: 'GET',
+                headers: new Headers({
+                    Authorization: 'Bearer ' + cookie.load('token')
+                }),
+            })
+                .then(response => response.json())
+                .then(resData => {
+                    cookie.save("chats", resData, {path: "/"});
+                })
+        }
     }
 
     render () {

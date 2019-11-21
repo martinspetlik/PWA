@@ -1,16 +1,17 @@
 from mongoengine import *
+import mongoengine_goodjson as gj
 from datetime import datetime
 
 from flask_login import UserMixin, login_manager
 
 
-class User(UserMixin, Document):
+class User(gj.Document):
     name = StringField(required=True)
     email = EmailField(required=True, unique=True)
-    password = StringField(required=True)
+    password = StringField(required=True, exclude_to_json=True)
 
     last_sign_in = DateTimeField()
-    date_created = DateTimeField(default=datetime.utcnow)
+    date_created = DateTimeField(default=datetime.utcnow, exclude_to_json=True)
 
     # def is_authenticated(self):
     #     return True

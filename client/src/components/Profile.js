@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import cookie from 'react-cookies';
-import {Link} from "react-router-dom";
- import { AlertDanger, AlertPrimary } from './Alerts'
+import { AlertDanger, AlertPrimary } from './Alerts'
 
 class Profile extends Component {
     constructor() {

@@ -3,7 +3,7 @@ import unittest
 from mongoengine import *
 from server.models.user import User
 from server.models.message import Message
-from server.models.conversation import Conversation
+from server.models.chat import Chat
 
 
 class TestUser(unittest.TestCase):
@@ -43,9 +43,9 @@ class TestConversation(unittest.TestCase):
         saved_users = User.objects()
         self.assertEqual(len(saved_users), len(users))
 
-        Conversation(members=users).save()
+        Chat(members=users).save()
 
-        conversation = Conversation.objects().first()
+        conversation = Chat.objects().first()
 
         self.assertEqual(len(conversation.members), len(users))
         for con_user, user in zip(conversation.members, users):
@@ -69,7 +69,7 @@ class TestMessage(unittest.TestCase):
         current_user = User.objects().first()
         users = User.objects()
 
-        con = Conversation(members=users).save()
+        con = Chat(members=users).save()
 
         Message(text="Message test text", author=current_user.id, conversation=con).save()
 
