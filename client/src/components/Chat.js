@@ -1,15 +1,12 @@
 import React, { Component } from 'react'
 import cookie from 'react-cookies';
-import io from 'socketio-jwt';
-import 'socketio-jwt';
+import io from 'socket.io-client'
 import './chat.css';
 
 import { Redirect } from 'react-router-dom'
-
-import {Link} from "react-router-dom";
-import { AlertDanger, AlertPrimary } from './Alerts'
 import Avatar from 'react-avatar';
-import {login} from "./UserFunctions";
+
+const socket = io('http://localhost:5000')
 
 class Chat extends Component {
 
@@ -20,8 +17,10 @@ class Chat extends Component {
             name: '',
             email: '',
             chats: '',
-            messages: '',
-            mes: ''
+            messages: [],
+            mes: '',
+            chat_id: '',
+            new_message: false
 
         }
 
@@ -34,94 +33,105 @@ class Chat extends Component {
     }
 
     onSubmit (e) {
-        // io = require('socket.io-client')();
-
-        var io            = require("socket.io-client")('http://localhost:3000/message/');
         e.preventDefault()
 
-        console.log("on submit")
+        var new_message = false;
 
-        // var socket = io.connect('http://localhost:9000');
-        // socket.on('connect', function (socket) {
-        //     socket
-        //     .on('authenticated', function () {
-        //         //do other things
-        //         })
-        //     .emit('authenticate', {token: cookie.load('token')}); //send the jwt
-        //     });
+        console.log(this.state.chat_id)
 
-        const socket = io.connect('http://localhost:3000/message');
-            socket.on('connect', () => {
-              socket
-                .emit('authenticate', { token: cookie.load('token')}) //send the jwt
-                .on('authenticated', () => {
-                  //do other things
-                })
-                .on('unauthorized', (msg) => {
-                  console.log(`unauthorized: ${JSON.stringify(msg.data)}`);
-                  throw new Error(msg.data.type);
-                })
-            });
+        socket.send({'author': cookie.load('current_user_name'), 'text': this.state.mes},
+            this.state.chat_id)
 
-        // io.sockets
-        //     .on('connection', socketioJwt.authorize({
-        //         secret: cookie.load('token'),
-        //         timeout: 15000 // 15 seconds to send the authentication message
-        //     })).on('authenticated', function(socket) {
-        //         //this socket is authenticated, we are good to handle more events from it.
-        //         console.log('hello! ' + socket.decoded_token.name);
-        //     });
+        console.log("MESSAGES " + this.state.messages)
 
+        socket.on("message", msg => {
+            console.log("New message " + msg)
+            this.setState(messages => ({
+                             messages: [...this.state.messages, msg]
+            }))
 
-
-
-        const message = {
-            mes: this.state.mes,
-        }
-        //const [cookies, setCookie] = useCookies(['chat']);
-
+            new_message = true
+        })
     }
+
+    // loadMessages() {
+    //     socket.emit("load_messages", this.state.chat_id)
+    //     socket.on("all_messages", messages => {
+    //         console.log("ALL messages " + messages)
+    //         console.log("delka " + messages.length)
+    //         this.setState({messages: messages});
+    //     })
+
+        // console.log("delka " + messages.length)
+
+
+
+        // fetch(this.props.location.pathname, {
+        //         method: 'GET',
+        //         headers: new Headers({
+        //             Authorization: 'Bearer ' + cookie.load('token')
+        //         }),
+        //     })
+        //         .then(response => response.json())
+        //         .then(resData => {
+        //             console.log(resData)
+        //             console.log(typeof resData)
+        //             // var result = JSON.parse(resData);
+        //             //
+        //             // console.log(result)
+        //             // console.log(typeof result)
+        //             this.setState({messages: resData});
+        //             // console.log(typeof this.state.chats)
+        //             // console.log(this.state.chats)
+        //
+        //             // var chats_array = []
+        //             // for (var key of Object.keys(this.state.chats)) {
+        //             //     chats_array =
+        //             //     console.log(key + " -> " + this.state.chats[key].members)
+        //             //     }
+        //         })
+    //}
 
 
     componentDidMount(){
-        //console.log(cookie.load('token'))
         if (cookie.load('token')) {
 
-            fetch(this.props.location.pathname, {
-                method: 'GET',
-                headers: new Headers({
-                    Authorization: 'Bearer ' + cookie.load('token')
-                }),
-            })
-                .then(response => response.json())
-                .then(resData => {
-                    console.log(resData)
-                    console.log(typeof resData)
-                    // var result = JSON.parse(resData);
-                    //
-                    // console.log(result)
-                    // console.log(typeof result)
-                    this.setState({messages: resData});
-                    // console.log(typeof this.state.chats)
-                    // console.log(this.state.chats)
+            var path = this.props.location.pathname.split("/")
+            var chat_id = path[path.length-1]
 
-                    // var chats_array = []
-                    // for (var key of Object.keys(this.state.chats)) {
-                    //     chats_array =
-                    //     console.log(key + " -> " + this.state.chats[key].members)
-                    //     }
-                })
+            this.state.chat_id = chat_id
+
+            // socket.on("connect", function() {
+            //     socket.send("User connected")
+            // })
+
+            socket.emit("join", {'username': cookie.load('current_user_name'),
+                'room': chat_id})
+
+            socket.emit("load_messages", this.state.chat_id)
+            socket.on("all_messages", messages => {
+                console.log("ALL messages " + messages)
+                console.log("delka " + messages.length)
+                this.setState({messages: messages});
+                console.log("Socket this state messages " + this.state.messages)
+            })
+
+            setTimeout(function(){
+                console.log('after');
+            },500);
+
+            //this.loadMessages()
+
+            console.log("this.state.messages " + this.state.messages)
+
+        //      for (var i = 0; i < this.state.messages.length; i++) {
+        //     console.log(JSON.stringify(this.state.messages[i]))
+        // }
+
+            //this.setSocketListeners()
 
             this.state.name = cookie.load('current_user_name')
-
             this.state.chats = cookie.load("chats")
-
-
-
-            // Object.keys(this.state.chats).map(key => (
-            //    console.log(key)
-            //     // this.routeChange(key)
-            // ))
 
             console.log(this.state.messages)
             console.log("MESSAGES")
@@ -130,20 +140,13 @@ class Chat extends Component {
     }
 
     routeChange(key) {
-        console.log("key " + key)
-        // console.log(typeof key)
-        // console.log(this.props.location.pathname)
-        // console.log(this.props.location.pathname.split("/"))
-
         var path = this.props.location.pathname.split("/")
-
         console.log("path " + path[path.length-1])
-        // console.log(typeof path[path.length-1])
-
         if (path[path.length -1] !== key) {
             return <Redirect to='http://localhost:3000/chats/{key}'/>
         }
     }
+
 
     render () {
 
@@ -164,15 +167,23 @@ class Chat extends Component {
         )
 
         const messages = (
-
-        Object.keys(this.state.messages).map(key => (
-                <li className={this.state.messages[key].status}>
-                    <Avatar name={this.state.name} className="avatar" size="30px"/>
-                    <p>{this.state.messages[key].text}</p>
+            this.state.messages.map((message) =>
+                <li className={message[3]}>
+                         <Avatar name={message[0]} className="avatar" size="30px"/>
+                         <p>{message[1]}</p>
                 </li>
-        )
-            )
-        )
+
+        ))
+
+        // const messages = (
+        //     Object.keys(this.state.messages).map(key => (
+        //             <li className={this.state.messages[key].status}>
+        //                 <Avatar name={this.state.name} className="avatar" size="30px"/>
+        //                 <p>{this.state.messages[key].text}</p>
+        //             </li>
+        //     )
+        //         )
+        // )
 
         return (
             <div id="frame">

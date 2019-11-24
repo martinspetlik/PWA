@@ -2,8 +2,16 @@ import React, { Component } from 'react'
 import { login } from './UserFunctions'
 import {AlertDanger} from "./Alerts";
 
+import { GoogleLogin } from 'react-google-login';
+
 import cookie from 'react-cookies';
 import {Redirect} from "react-router-dom";
+
+    //
+    // const responseGoogle = (response) => {
+    //     console.log(response);
+    // }
+
 
 class Login extends Component {
     constructor() {
@@ -74,6 +82,8 @@ class Login extends Component {
                     cookie.save("chats", resData, {path: "/"});
                 })
         }
+
+
     }
 
     render () {
@@ -83,6 +93,14 @@ class Login extends Component {
                     <div className="col-md-6 mt-5 mx-auto">
 
                         {this.state.message}
+
+                        {/*<GoogleLogin*/}
+                            {/*clientId="9200143057-icc83i692fcceah2u1jljtd1cuku5ujn.apps.googleusercontent.com"*/}
+                            {/*buttonText="Login"*/}
+                            {/*onSuccess={responseGoogle}*/}
+                            {/*onFailure={responseGoogle}*/}
+                            {/*cookiePolicy={'single_host_origin'}*/}
+                        {/*/>*/}
 
                         <form noValidate onSubmit={this.onSubmit}>
                             <h1 className="h3 mb-3 font-weight-normal">Please sign in</h1>
