@@ -6,9 +6,11 @@ import './chat.css';
 import { Redirect } from 'react-router-dom'
 import Avatar from 'react-avatar';
 
-const socket = io('http://localhost:5000')
+
+const socket = io('/')
 
 class Chat extends Component {
+
 
     constructor() {
         super()
@@ -20,32 +22,45 @@ class Chat extends Component {
             messages: [],
             mes: '',
             chat_id: '',
-            new_message: false
+            new_message: false,
+            redirect: ''
 
         }
 
         this.onChange = this.onChange.bind(this)
         this.onSubmit = this.onSubmit.bind(this)
+
+        this.onSubmitAdd = this.onSubmitAdd.bind(this)
+        this.routeChange = this.routeChange.bind(this)
     }
 
     onChange (e) {
         this.setState({ [e.target.name]: e.target.value })
     }
 
+
+    onSubmitAdd(e) {
+        e.preventDefault()
+
+        this.props.history.push("/chats/add")
+    }
+
     onSubmit (e) {
         e.preventDefault()
 
+        //var socket = this.state.socket
+
         var new_message = false;
 
-        console.log(this.state.chat_id)
+        //console.log(this.state.chat_id)
 
         socket.send({'author': cookie.load('current_user_name'), 'text': this.state.mes},
             this.state.chat_id)
 
-        console.log("MESSAGES " + this.state.messages)
+        //console.log("MESSAGES " + this.state.messages)
 
         socket.on("message", msg => {
-            console.log("New message " + msg)
+            //console.log("New message " + msg)
             this.setState(messages => ({
                              messages: [...this.state.messages, msg]
             }))
@@ -54,46 +69,25 @@ class Chat extends Component {
         })
     }
 
-    // loadMessages() {
-    //     socket.emit("load_messages", this.state.chat_id)
-    //     socket.on("all_messages", messages => {
-    //         console.log("ALL messages " + messages)
-    //         console.log("delka " + messages.length)
-    //         this.setState({messages: messages});
-    //     })
-
-        // console.log("delka " + messages.length)
-
-
-
-        // fetch(this.props.location.pathname, {
-        //         method: 'GET',
-        //         headers: new Headers({
-        //             Authorization: 'Bearer ' + cookie.load('token')
-        //         }),
-        //     })
-        //         .then(response => response.json())
-        //         .then(resData => {
-        //             console.log(resData)
-        //             console.log(typeof resData)
-        //             // var result = JSON.parse(resData);
-        //             //
-        //             // console.log(result)
-        //             // console.log(typeof result)
-        //             this.setState({messages: resData});
-        //             // console.log(typeof this.state.chats)
-        //             // console.log(this.state.chats)
-        //
-        //             // var chats_array = []
-        //             // for (var key of Object.keys(this.state.chats)) {
-        //             //     chats_array =
-        //             //     console.log(key + " -> " + this.state.chats[key].members)
-        //             //     }
-        //         })
-    //}
-
-
     componentDidMount(){
+
+        //console.log("CHAT cookie token " + cookie.load('token'))
+        if (cookie.load('token')) {
+
+            fetch("/chats", {
+                method: 'GET',
+                headers: new Headers({
+                    Authorization: 'Bearer ' + cookie.load('token')
+                }),
+            })
+                .then(response => response.json())
+                .then(resData => {
+                    cookie.save("chats", resData, {path: "/"});
+                })
+
+            //console.log("cookie chats " + cookie.load("chats"))
+        }
+
         if (cookie.load('token')) {
 
             var path = this.props.location.pathname.split("/")
@@ -101,60 +95,47 @@ class Chat extends Component {
 
             this.state.chat_id = chat_id
 
-            // socket.on("connect", function() {
-            //     socket.send("User connected")
-            // })
-
-            socket.emit("join", {'username': cookie.load('current_user_name'),
-                'room': chat_id})
+            socket.emit("join", {
+                'username': cookie.load('current_user_name'),
+                'room': chat_id
+            })
 
             socket.emit("load_messages", this.state.chat_id)
             socket.on("all_messages", messages => {
-                console.log("ALL messages " + messages)
-                console.log("delka " + messages.length)
+                //console.log("ALL messages " + messages)
+                //console.log("delka " + messages.length)
                 this.setState({messages: messages});
-                console.log("Socket this state messages " + this.state.messages)
+                //console.log("Socket this state messages " + this.state.messages)
             })
 
-            setTimeout(function(){
-                console.log('after');
-            },500);
+            //console.log("this.state.messages " + this.state.messages)
 
-            //this.loadMessages()
-
-            console.log("this.state.messages " + this.state.messages)
-
-        //      for (var i = 0; i < this.state.messages.length; i++) {
-        //     console.log(JSON.stringify(this.state.messages[i]))
-        // }
-
-            //this.setSocketListeners()
 
             this.state.name = cookie.load('current_user_name')
             this.state.chats = cookie.load("chats")
 
-            console.log(this.state.messages)
-            console.log("MESSAGES")
-            console.log(this.state.chats)
+            //console.log(this.state.messages)
+            //console.log("MESSAGES")
+           // console.log(this.state.chats)
         }
     }
 
-    routeChange(key) {
-        var path = this.props.location.pathname.split("/")
-        console.log("path " + path[path.length-1])
-        if (path[path.length -1] !== key) {
-            return <Redirect to='http://localhost:3000/chats/{key}'/>
-        }
-    }
+    createContacts(){
+        let contacts = []
+        for (let key in this.state.chats) {
+            let divStyle = {}
+            if (this.state.chat_id === this.state.chats[key].id) {
+                divStyle = {backgroundColor: "#3E8477"}
+            }
 
+            contacts.push(
+                <li className="contact"
+                    onClick={this.routeChange}
+                    id={this.state.chats[key].id}
+                    style={divStyle}
+                >
 
-    render () {
-
-        const contacts = (
-
-        Object.keys(this.state.chats).map(key => (
-                <li className="contact">
-                    <div className="wrap" onClick={this.routeChange(key)}>
+                    <div className="wrap">
                         <span className="contact-status offline"></span>
                         <Avatar name={this.state.chats[key].members} className="avatar" size="40px"/>
                         <div className="meta">
@@ -162,10 +143,20 @@ class Chat extends Component {
                         </div>
                     </div>
                 </li>
-        )
             )
-        )
+        }
+        return contacts
+    }
 
+    routeChange(e) {
+        const key = e.currentTarget.id
+        if (this.state.chat_id !== key) {
+            this.props.history.push("/chat/" + key)
+            window.location.reload()
+        }
+    }
+
+    render () {
         const messages = (
             this.state.messages.map((message) =>
                 <li className={message[3]}>
@@ -174,16 +165,6 @@ class Chat extends Component {
                 </li>
 
         ))
-
-        // const messages = (
-        //     Object.keys(this.state.messages).map(key => (
-        //             <li className={this.state.messages[key].status}>
-        //                 <Avatar name={this.state.name} className="avatar" size="30px"/>
-        //                 <p>{this.state.messages[key].text}</p>
-        //             </li>
-        //     )
-        //         )
-        // )
 
         return (
             <div id="frame">
@@ -196,12 +177,15 @@ class Chat extends Component {
                     </div>
                     <div id="contacts">
                         <ul>
-                            {contacts}
+                            {this.createContacts()}
+
                         </ul>
                     </div>
                     <div id="bottom-bar">
-                        <button id="addcontact"><i className="fa fa-user-plus fa-fw" aria-hidden="true"></i> <span>Add contact</span>
+                        <form onSubmit={this.onSubmitAdd}>
+                        <button id="addcontact" ><i className="fa fa-user-plus fa-fw" aria-hidden="true"></i> <span>Add chat</span>
                         </button>
+                        </form>
                     </div>
                 </div>
                 <div className="content">
@@ -226,7 +210,12 @@ class Chat extends Component {
                 </div>
             </div>
 
+
         )
+
+
+
+
     }
 }
 

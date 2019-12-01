@@ -7,7 +7,9 @@ import Login from './components/Login'
 import Register from './components/Register'
 import Profile from './components/Profile'
 import Chat from './components/Chat'
-import GoogleLogin from './components/GoogleLogin'
+import PasswordResetEmail from './components/PasswordResetEmail'
+import PasswordReset from './components/PasswordReset'
+import ChatAdd from './components/ChatAdd'
 
 class App extends Component {
   render () {
@@ -17,10 +19,12 @@ class App extends Component {
           <NavBar />
           <Route exact path="/" component={Landing} />
             <Route exact path="/registration" component={Register} />
+            <Route exact path="/reset" component={PasswordResetEmail} />
+            <Route exact path="/reset/:token" component={PasswordReset} />
             <Route exact path="/" component={Login} />
-            {/*<Route exact path="/login" component={GoogleLogin} />*/}
             <Route exact path="/profile" component={Profile} />
             <Route exact path="/chat/:id" component={Chat} />
+            <Route exact path="/chats/add" component={ChatAdd} />
         </div>
       </Router>
     );

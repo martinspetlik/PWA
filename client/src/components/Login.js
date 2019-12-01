@@ -1,16 +1,8 @@
 import React, { Component } from 'react'
 import { login } from './UserFunctions'
 import {AlertDanger} from "./Alerts";
-
-import { GoogleLogin } from 'react-google-login';
-
+import { Link } from 'react-router-dom';
 import cookie from 'react-cookies';
-import {Redirect} from "react-router-dom";
-
-    //
-    // const responseGoogle = (response) => {
-    //     console.log(response);
-    // }
 
 
 class Login extends Component {
@@ -39,7 +31,6 @@ class Login extends Component {
             email: this.state.email,
             password: this.state.password
         }
-        //const [cookies, setCookie] = useCookies(['chat']);
 
         login(user).then(res => {
             console.log(res)
@@ -47,6 +38,19 @@ class Login extends Component {
             if (res.success) {
                 cookie.save("token", res.access_token, {path: "/", HttpOnly:true});
                 cookie.save("current_user_name", res.user_name, {path: "/", HttpOnly:true});
+
+                //while (cookie.load("chats") === undefined) {
+                    this.getChats()
+
+                    if (cookie.load("chats")) {
+                        Object.keys(cookie.load("chats")).map(key => (
+                            this.props.history.push("/chat/" + cookie.load("chats")[key]["id"])
+                        ))
+                    }
+
+                    //setTimeout(null,100)
+
+               // }
 
             } else {
 
@@ -57,21 +61,14 @@ class Login extends Component {
             }
         })
 
-        this.getChats()
-
-        Object.keys(cookie.load("chats")).map(key => (
-            this.props.history.push("/chat/" + key)
-        ))
-
-
 
     }
 
     getChats() {
-        //console.log(cookie.load('token'))
+        console.log("cookie token " + cookie.load('token'))
         if (cookie.load('token')) {
 
-            fetch("http://localhost:3000/chats", {
+            fetch("/chats", {
                 method: 'GET',
                 headers: new Headers({
                     Authorization: 'Bearer ' + cookie.load('token')
@@ -81,9 +78,9 @@ class Login extends Component {
                 .then(resData => {
                     cookie.save("chats", resData, {path: "/"});
                 })
+
+            console.log("cookie chats " + cookie.load("chats"))
         }
-
-
     }
 
     render () {
@@ -127,6 +124,9 @@ class Login extends Component {
                                 Sign in
                             </button>
                         </form>
+
+
+                        <Link to="/reset" > Reset password </Link>
                     </div>
                 </div>
             </div>
