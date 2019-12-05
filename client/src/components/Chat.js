@@ -53,7 +53,7 @@ class Chat extends Component {
 
         confirmAlert({
               title: 'Confirm to submit',
-              message: 'Are you sure to do this.',
+              message: 'Are you sure to delete chat',
               buttons: [
                 {
                   label: 'Yes',
@@ -75,8 +75,9 @@ class Chat extends Component {
         }).then(response => response.json())
             .then(res => {
                 if (res.success) {
+                    cookie.remove("chats", {path: "/"})
                     this.props.history.push("/chats")
-
+                    window.location.reload()
                 }
             });
     }
@@ -148,8 +149,13 @@ class Chat extends Component {
         let contacts = []
         for (let key in this.state.chats) {
             let divStyle = {}
+            let title = this.state.chats[key].members
             if (this.state.chat_id === this.state.chats[key].id) {
                 divStyle = {backgroundColor: "#3E8477"}
+            }
+
+            if (this.state.chats[key].title !== "") {
+                title = this.state.chats[key].title
             }
 
             contacts.push(
@@ -161,9 +167,9 @@ class Chat extends Component {
 
                     <div className="wrap">
                         <span className="contact-status offline"></span>
-                        <Avatar name={this.state.chats[key].members} className="avatar" size="40px"/>
+                        <Avatar name={title} className="avatar" size="40px"/>
                         <div className="meta">
-                            <p>{this.state.chats[key].members}</p>
+                            <p>{title}</p>
                         </div>
                     </div>
                 </li>

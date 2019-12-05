@@ -7,13 +7,6 @@ import NavDropdown from 'react-bootstrap/NavDropdown'
 import cookie from 'react-cookies'
 
 class NavBar extends Component {
-    logOut (e) {
-        e.preventDefault()
-        cookie.remove("token", {path: "/"})
-        cookie.remove("chats", {path: "/"})
-        this.props.history.push("/")
-        window.location.reload()
-    }
 
     render () {
         const loginRegLink = (
@@ -34,9 +27,9 @@ class NavBar extends Component {
                     </Link>
                 </li>
                 <li className="nav-item">
-                    <a href="#" onClick={this.logOut.bind(this)} className="nav-link">
+                    <Link to="/logout" className="nav-link">
                         Logout
-                    </a>
+                    </Link>
                 </li>
             </ul>
         )

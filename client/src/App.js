@@ -11,7 +11,7 @@ import PasswordResetEmail from './components/PasswordResetEmail'
 import PasswordReset from './components/PasswordReset'
 import ChatAdd from './components/ChatAdd'
 import Chats from './components/Chats'
-import io from "socket.io-client";
+import Logout from './components/Logout'
 
 
 class App extends Component {
@@ -23,6 +23,7 @@ class App extends Component {
           <NavBar />
           <Route exact path="/" component={Landing} />
             <Route exact path="/registration" component={Register} />
+            <Route exact path="/logout" component={Logout} />
             <Route exact path="/reset" component={PasswordResetEmail} />
             <Route exact path="/reset/:token" component={PasswordReset} />
             <Route exact path="/" component={Login} />

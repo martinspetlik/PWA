@@ -43,6 +43,9 @@ class Login extends Component {
                     this.getChats()
 
                     if (cookie.load("chats")) {
+                        if (cookie.load("chats").length === 0) {
+                           this.props.history.push("/chats")
+                        }
                         Object.keys(cookie.load("chats")).map(key => (
                             this.props.history.push("/chat/" + cookie.load("chats")[key]["id"])
                         ))

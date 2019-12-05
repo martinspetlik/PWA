@@ -211,9 +211,7 @@ def create_app():
 
     api.add_resource(resources.UserRegistration, '/registration')
     api.add_resource(resources.UserLogin, '/')
-    #api.add_resource(resources.Login, '/login')
-    #api.add_resource(resources.Authorized, '/authorized')
-    api.add_resource(resources.UserProfile, '/profile')
+    #api.add_resource(resources.UserProfile, '/profile')
     api.add_resource(resources.PasswordResetEmail, '/reset')
     api.add_resource(resources.PasswordReset, '/reset/<token>')
 
@@ -222,23 +220,14 @@ def create_app():
     api.add_resource(resources.ChatAdd, '/chats/add')
 
     api.add_resource(resources.UserLogoutAccess, '/logout')
-    #api.add_resource(resources.UserLogoutRefresh, '/logout/refresh')
-    #api.add_resource(resources.TokenRefresh, '/token/refresh')
-
-
     app.config.from_object('config.config.ProductionConfig')
-
     app.config['SECRET_KEY'] = '9OLWxND4o83j4K4iuopO'
-
     return app
 
 
 def create_conversations():
     user1 = User.objects(name="test").first()
     user2 = User.objects(name="test2").first()
-
-    print("user 1 ", user1)
-    print("user 2 ", user2)
 
     try:
         ChatCreation.create_new(members=[user1, user2])
@@ -263,6 +252,26 @@ def load_user(user_id):
     user = User.objects(id=user_id).first()
     print("user ", user)
     return user
+
+
+@login_manager.request_loader
+def load_user_from_request(request):
+
+    print("login manager request loader ", request.headers)
+
+    token = request.headers.get('Authorization')
+    if token:
+        token = token.replace('Bearer ', '', 1)
+        try:
+            token = token
+        except TypeError:
+            pass
+        user = User.objects(token=token).first()
+        if user:
+            return user
+
+    # finally, method did not login the user
+    return None
 
 
 def renew_database():

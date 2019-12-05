@@ -36,10 +36,12 @@ class ChatAdd extends Component {
     onSubmit (e) {
         e.preventDefault()
 
-        const chat = {
-            title: this.state.title,
-            members: this.state.members
-        }
+        console.log("title " + this.state.title)
+        console.log("members " + typeof(this.state.members))
+
+        console.log("members " + this.state.members[0])
+        console.log("members " + this.state.members[0]["label"])
+        console.log("members " + this.state.members[0]["value"])
 
         fetch("/chats/add", {
             method: 'POST',
@@ -62,8 +64,7 @@ class ChatAdd extends Component {
                 // }, 3000);
                 let chats =  [...cookie.load("chats"), res.chat]
 
-                cookie.save("chats", chats)
-
+                cookie.save("chats", chats, {path: "/"})
 
                 this.props.history.push("/chat/" + res.chat.id)
 
@@ -117,16 +118,16 @@ class ChatAdd extends Component {
                         />
                         </div>
                         <div className="form-group">
-                      <Select
-                        //defaultValue={[colourOptions[2], colourOptions[3]]}
-                        isMulti
-                        name="members"
-                        options={users}
-                        className="basic-multi-select"
-                        classNamePrefix="select user"
-                        onChange={this.handleChange}
-                        // value={this.state.members}
-                      />
+                              <Select
+                                //defaultValue={[colourOptions[2], colourOptions[3]]}
+                                isMulti
+                                name="members"
+                                options={users}
+                                className="basic-multi-select"
+                                classNamePrefix="select user"
+                                onChange={this.handleChange}
+                                // value={this.state.members}
+                              />
                         </div>
                     <button type="submit" className="btn btn-lg btn-primary btn-block">
                                         Create
