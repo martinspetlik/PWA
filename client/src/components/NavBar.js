@@ -9,8 +9,10 @@ import cookie from 'react-cookies'
 class NavBar extends Component {
     logOut (e) {
         e.preventDefault()
-        cookie.remove('token')
-        this.props.history.push(`/`)
+        cookie.remove("token", {path: "/"})
+        cookie.remove("chats", {path: "/"})
+        this.props.history.push("/")
+        window.location.reload()
     }
 
     render () {
@@ -27,8 +29,8 @@ class NavBar extends Component {
         const userLink = (
             <ul className="navbar-nav">
                 <li className="nav-item">
-                    <Link to="/profile" className="nav-link">
-                        User
+                    <Link to="/chats" className="nav-link">
+                        Chats
                     </Link>
                 </li>
                 <li className="nav-item">

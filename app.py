@@ -12,7 +12,7 @@ from flask_restful import Resource
 from flask import Flask, request
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
-from flask_socketio import SocketIO, send, disconnect, emit, join_room, leave_room
+from flask_socketio import SocketIO, send, disconnect, emit, join_room, leave_room, rooms
 from flask_session import Session
 
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required,
@@ -31,6 +31,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")#, manage_session=False)
 
 login_manager = LoginManager()
 
+
 @socketio.on('connect')
 def connect_handler():
     print("CONNECT EVENT")
@@ -46,7 +47,7 @@ def connect_handler():
              {'message': '{0} has joined'.format(current_user.name)},
              broadcast=True)
     else:
-        disconnect()
+        #disconnect()
         print("CONNECT IS NOT AUTHENTICATED")
         return False  # not allowed here
 
@@ -73,6 +74,7 @@ def load_users():
     else:
         emit('all_users', False)
 
+
 @socketio.on("load_messages")
 def load_messages(id):
     """
@@ -80,27 +82,38 @@ def load_messages(id):
     :param id: chat id
     :return: last 50 messages
     """
+    print("LOAD MESSAGES")
     if current_user.is_authenticated:
-        print("chat ID ", id)
-        messages = Message.objects(chat=id)
-        print("messages from DB ", messages)
-        messages = list(messages)[:50]
+        #print("chat ID ", id)
+        chat = Chat.objects(id=id).first()
+        chat_members_ids = [member.id for member in chat.members]
+        print("chat memebrs ids ", chat_members_ids)
+        print("current user id ", current_user["id"])
+        if current_user["id"] not in chat_members_ids:
+            print("NOT IN IDS")
+            emit('all_messages', [False])
+        else:
 
-        messages.sort(key=lambda x: x.id, reverse=False)
+            messages = Message.objects(chat=id)
+            messages = list(messages)[:50]
 
-        print("messages ", messages)
+            messages.sort(key=lambda x: x.id, reverse=False)
 
-        all_messages = []
-        for message in messages:
-            user = User.objects(name=current_user["name"]).first()
-            if message.author.id == user.id:
-                status = "sent"
-            else:
-                status = "replies"
+            # print("messages ", messages)
+            # print("current user[name] ", current_user["name"])
 
-            all_messages.append([message.author.name, message.text, str(message.date_created), status])
+            all_messages = []
+            status = ""
+            for message in messages:
+                user = User.objects(name=current_user["name"]).first()
+                # if message.author.id == user.id:
+                #     status = "sent"
+                # else:
+                #     status = "replies"
 
-        emit('all_messages', all_messages, broadcast=True, room=id)
+                all_messages.append([message.author.name, message.text, str(message.date_created), status])
+
+            emit('all_messages', all_messages)#, room=id)
 
         # message_dict = {}
         # for message in messages:
@@ -114,8 +127,8 @@ def load_messages(id):
         #                                                "author": message.author.name}
         #     print("message ", message)
     else:
-        print("LOAD messages not authenticated")
-        emit('all_messages', [False], broadcast=True, room=id)
+        #print("LOAD messages not authenticated")
+        emit('all_messages', [False])#, room=id)
 
     # print("message_dict ", message_dict)
     # emit('all_messages', message_dict, broadcast=True, room=id)
@@ -125,36 +138,41 @@ def load_messages(id):
     # Message(author=user, chat=chat, text=msg['text']).save()
 
 
-
 @socketio.on("message")
 def handle_message(msg, room):
+
+    print("HANDLE MESSAGE")
     print("message ", msg)
     print("room ", room)
+    print("rooms ", rooms())
 
     user = User.objects(name=msg['author']).first()
     chat = Chat.objects(id=room).first()
     Message(author=user, chat=chat, text=msg['text']).save()
 
+    status = ""
+
     if current_user.is_authenticated:
-        if msg["author"] == current_user["name"]:
-            status = "sent"
-        else:
-            status = "replies"
+        # if msg["author"] == current_user["name"]:
+        #     status = "sent"
+        # else:
+        #     status = "replies"
 
         message = [msg["author"], msg["text"], str(1), status]
 
         # print("message ", message)
         # print("msg ", msg)
 
-        send(message, broadcast=True, room=room)
+        send(message, room=room)
     else:
-        send(False, broadcast=True, room=room)
+        print("HANDLE MESSAGE FALSE")
+        send(False, room=room)
 
 
 @socketio.on('join')
 def on_join(data):
     if current_user.is_authenticated:
-        print("JOIN ", data)
+        #print("JOIN ", data)
         username = data['username']
         room = data['room']
         join_room(room)
@@ -257,6 +275,8 @@ def renew_database():
     user2 = User(name="user2", email='test2@test.cz', password=generate_password_hash("test", method='sha256')).save()
     user3 = User(name="user3", email='test3@test.cz', password=generate_password_hash("test", method='sha256')).save()
 
+    user4 = User(name="user4", email='martin.spetlik@tul.cz', password=generate_password_hash("test", method='sha256')).save()
+
     print("user1 ", user1)
 
     chat1 = ChatCreation.create_new(members=[user1, user2])
@@ -269,13 +289,13 @@ def renew_database():
     Message(text="Zprava user1", author=user1, chat=chat1).save()
 
     Message(text="Zprava user1 chat 2", author=user1, chat=chat2).save()
-    Message(text="Zprava user2 chat2", author=user2, chat=chat2).save()
+    Message(text="Zprava user2 chat2", author=user3, chat=chat2).save()
 
 
 if __name__ == "__main__":
 
     app = create_app()
-    #renew_database()
+    renew_database()
     login_manager.init_app(app)
     #create_conversations()
     print("app.config['TESTING']", app.config['TESTING'])

@@ -136,6 +136,7 @@ class UserLogin(Resource):
 class Chats(Resource):
     def _get_all_chats(self, current_user):
         print("get all chats")
+        print("current user name ", current_user["name"])
 
         user = User.objects(name=current_user["name"]).first()
         chats = Chat_db.objects(members__contains=user).order_by('last_message_date')
@@ -212,6 +213,8 @@ class PasswordResetEmail(Resource):
         print("email ", email)
         cur_user = User.objects(email=email).first()
 
+        print("reset email user ", cur_user)
+
         if not cur_user:
             return {"success": False, "message": "No user has this email: {}".format(email)}
 
@@ -219,6 +222,7 @@ class PasswordResetEmail(Resource):
         token = s.dumps(email, salt='email-password-reset')
         msg = MailMessage('Confirm Email', sender='spetlik.martin@seznam.cz', recipients=[email])
         link = url_for('passwordreset', token=token, _external=True)
+        link = "http://localhost:3000/reset/{}".format(token)
         msg.body = 'Your link is {}'.format(link)
         mail.send(msg)
 
@@ -226,6 +230,27 @@ class PasswordResetEmail(Resource):
 
 
 class PasswordReset(Resource):
+
+    def post(self, token):
+        """
+        Render form
+        :return:
+        """
+        email = request.get_json().get('email')
+        password = request.get_json().get('password')
+
+        try:
+            token_email = s.loads(token, salt='email-password-reset', max_age=3600)
+        except SignatureExpired:
+            return {"success": False, "message": "The token is expired!"}
+
+        if email != token_email:
+            return {"success": False, "message": "Bad email"}
+
+        user = User.objects(email=email).first()
+        user.update(password=generate_password_hash(password, method='sha256'))
+
+        return {"success": True, "message": "Password was changed"}
 
     def get(self, token):
         """
@@ -235,17 +260,9 @@ class PasswordReset(Resource):
         try:
             email = s.loads(token, salt='email-password-reset', max_age=3600)
         except SignatureExpired:
-            return '<h1>The token is expired!</h1>'
+            return {"success": False, "message": "The token is expired!"}
 
-        return redirect("/reset", code=302)
-
-        #url = url_for('static', filename='PasswordReset.js')
-        #return send_file('client/src/components/PasswordReset.js')
-
-        #return render_template('index.html', bundle=url)
-
-        # return render_template('hello.html', name=name)
-        # return '<h1>The token works!</h1>'
+        return {"success": True, "message": "Everything OK", "email": email}
 
 
 class UserProfile(Resource):
@@ -260,6 +277,26 @@ class UserProfile(Resource):
 
 
 class Chat(Resource):
+    @login_required
+    def delete(self, id):
+        print("chat id ", id)
+        chat = Chat_db.objects(id=id).first()
+        print("chat ", chat)
+
+        if not chat:
+            return {"success": False, "message": "Chat not exist"}
+        else:
+
+            Chat_db.objects(id=id).delete()
+            Message.objects(chat=id).delete()
+
+        chat = Chat_db.objects(id=id).first()
+
+        if not chat:
+            return {"success": True, "message": "Chat was deleted"}
+
+        return {"success": False, "message": "Delete failed, try it again"}
+
     @login_required
     def get(self, id):
         messages = Message.objects(chat=id)
@@ -282,34 +319,29 @@ class Chat(Resource):
         email = request.get_json().get('email')
         name = request.get_json().get('name')
         password = request.get_json().get('password')
-
         print("request.get_json() ", request.get_json())
 
-    # @socketio.on('message')
-    # def on_chat_sent(self, data):
+
+    # @socketio.on('join')
+    # def on_join(self, data):
+    #     username = data['username']
     #     room = data['room']
-    #     emit('message_sent', data, room=room)
-
-    @socketio.on('join')
-    def on_join(self, data):
-        username = data['username']
-        room = data['room']
-        join_room(room)
-        emit(username + ' has entered the room.', room=room)
-
-    @socketio.on('leave')
-    def on_leave(self, data):
-        username = data['username']
-        room = data['room']
-        leave_room(room)
-        emit(username + ' has left the room.', room=room)
-
-    @socketio.on('message')
-    def handle_message(self, msg, room=None):
-        print("message ", msg)
-        print("message dist ", msg.__dict__)
-
-        emit(msg, broadcast=True)#, room=room)
+    #     join_room(room)
+    #     emit(username + ' has entered the room.', room=room)
+    #
+    # @socketio.on('leave')
+    # def on_leave(self, data):
+    #     username = data['username']
+    #     room = data['room']
+    #     leave_room(room)
+    #     emit(username + ' has left the room.', room=room)
+    #
+    # @socketio.on('message')
+    # def handle_message(self, msg, room=None):
+    #     print("message ", msg)
+    #     print("message dist ", msg.__dict__)
+    #
+    #     emit(msg, broadcast=True)#, room=room)
 
 
 class ChatAdd(Resource):
@@ -366,6 +398,7 @@ class UserLogoutAccess(Resource):
         #@TODO: remove cookie
 
         logout_user()
+        session.clear()
 
         # try:
         #     revoked_token = RevokedTokens(jti=jti)

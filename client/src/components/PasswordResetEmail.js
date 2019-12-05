@@ -50,7 +50,7 @@ class PasswordResetEmail extends Component {
                     }, 3000);
 
 
-                    this.props.history.push("/")
+                    //this.props.history.push("/")
 
                 } else {
                     this.setState({message: AlertDanger(res.message)});

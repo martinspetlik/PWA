@@ -10,8 +10,12 @@ import Chat from './components/Chat'
 import PasswordResetEmail from './components/PasswordResetEmail'
 import PasswordReset from './components/PasswordReset'
 import ChatAdd from './components/ChatAdd'
+import Chats from './components/Chats'
+import io from "socket.io-client";
+
 
 class App extends Component {
+
   render () {
     return (
       <Router>
@@ -25,6 +29,7 @@ class App extends Component {
             <Route exact path="/profile" component={Profile} />
             <Route exact path="/chat/:id" component={Chat} />
             <Route exact path="/chats/add" component={ChatAdd} />
+            <Route exact path="/chats" component={Chats} />
         </div>
       </Router>
     );

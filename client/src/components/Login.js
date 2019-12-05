@@ -50,7 +50,7 @@ class Login extends Component {
 
                     //setTimeout(null,100)
 
-               // }
+                // }
 
             } else {
 

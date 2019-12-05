@@ -1,19 +1,19 @@
 import React, { Component } from 'react'
 import cookie from 'react-cookies';
-import io from 'socket.io-client'
+import openSocket from 'socket.io-client'
 import './chat.css';
-
-import { Redirect } from 'react-router-dom'
+import { confirmAlert } from 'react-confirm-alert'; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css';
 import Avatar from 'react-avatar';
+import {AlertDanger, AlertPrimary} from "./Alerts";
 
 
-const socket = io('/')
 
 class Chat extends Component {
 
-
     constructor() {
         super()
+
 
         this.state = {
             name: '',
@@ -23,7 +23,8 @@ class Chat extends Component {
             mes: '',
             chat_id: '',
             new_message: false,
-            redirect: ''
+            redirect: '',
+            socket: openSocket('/')
 
         }
 
@@ -31,13 +32,54 @@ class Chat extends Component {
         this.onSubmit = this.onSubmit.bind(this)
 
         this.onSubmitAdd = this.onSubmitAdd.bind(this)
+        this.onSubmitRemove = this.onSubmitRemove.bind(this)
         this.routeChange = this.routeChange.bind(this)
+
+        this.state.socket.on("message", msg => {
+            this.setState(messages => ({
+                             messages: [...this.state.messages, msg]
+            }))
+
+            this.setState({new_message: true})
+        })
     }
 
     onChange (e) {
         this.setState({ [e.target.name]: e.target.value })
     }
 
+    onSubmitRemove(e) {
+        e.preventDefault()
+
+        confirmAlert({
+              title: 'Confirm to submit',
+              message: 'Are you sure to do this.',
+              buttons: [
+                {
+                  label: 'Yes',
+                  onClick: () => this.deleteChat()
+                },
+                {
+                  label: 'No',
+                  onClick: () => {}
+                }
+              ]
+        });
+
+    }
+
+    deleteChat() {
+
+        fetch("/chat/" + this.state.chat_id, {
+            method: 'DELETE',
+        }).then(response => response.json())
+            .then(res => {
+                if (res.success) {
+                    this.props.history.push("/chats")
+
+                }
+            });
+    }
 
     onSubmitAdd(e) {
         e.preventDefault()
@@ -47,31 +89,21 @@ class Chat extends Component {
 
     onSubmit (e) {
         e.preventDefault()
+        this.setState({new_message: false})
 
-        //var socket = this.state.socket
-
-        var new_message = false;
-
-        //console.log(this.state.chat_id)
-
-        socket.send({'author': cookie.load('current_user_name'), 'text': this.state.mes},
+        this.state.socket.send({'author': cookie.load('current_user_name'), 'text': this.state.mes},
             this.state.chat_id)
 
-        //console.log("MESSAGES " + this.state.messages)
-
-        socket.on("message", msg => {
-            //console.log("New message " + msg)
+        this.state.socket.on("message", msg => {
             this.setState(messages => ({
                              messages: [...this.state.messages, msg]
             }))
 
-            new_message = true
+            this.setState({new_message: true})
         })
     }
 
     componentDidMount(){
-
-        //console.log("CHAT cookie token " + cookie.load('token'))
         if (cookie.load('token')) {
 
             fetch("/chats", {
@@ -84,8 +116,6 @@ class Chat extends Component {
                 .then(resData => {
                     cookie.save("chats", resData, {path: "/"});
                 })
-
-            //console.log("cookie chats " + cookie.load("chats"))
         }
 
         if (cookie.load('token')) {
@@ -95,28 +125,22 @@ class Chat extends Component {
 
             this.state.chat_id = chat_id
 
-            socket.emit("join", {
+            this.state.socket.emit("join", {
                 'username': cookie.load('current_user_name'),
                 'room': chat_id
             })
 
-            socket.emit("load_messages", this.state.chat_id)
-            socket.on("all_messages", messages => {
-                //console.log("ALL messages " + messages)
-                //console.log("delka " + messages.length)
+            this.state.socket.emit("load_messages", this.state.chat_id)
+            this.state.socket.on("all_messages", messages => {
+                if (messages[0] === false) {
+                    this.props.history.push("/chats")
+                }
+
                 this.setState({messages: messages});
-                //console.log("Socket this state messages " + this.state.messages)
             })
-
-            //console.log("this.state.messages " + this.state.messages)
-
 
             this.state.name = cookie.load('current_user_name')
             this.state.chats = cookie.load("chats")
-
-            //console.log(this.state.messages)
-            //console.log("MESSAGES")
-           // console.log(this.state.chats)
         }
     }
 
@@ -148,6 +172,26 @@ class Chat extends Component {
         return contacts
     }
 
+    createMessages(){
+        let messages = []
+        for (let key in this.state.messages) {
+            let status = {}
+            if (this.state.name === this.state.messages[key][0]) {
+                status = "sent"
+            } else {
+                status = "replies"
+            }
+
+            messages.push(
+                <li className={status}>
+                         <Avatar name={this.state.messages[key][0]} className="avatar" size="30px"/>
+                         <p>{this.state.messages[key][1]}</p>
+                </li>
+            )
+        }
+        return messages
+    }
+
     routeChange(e) {
         const key = e.currentTarget.id
         if (this.state.chat_id !== key) {
@@ -157,15 +201,6 @@ class Chat extends Component {
     }
 
     render () {
-        const messages = (
-            this.state.messages.map((message) =>
-                <li className={message[3]}>
-                         <Avatar name={message[0]} className="avatar" size="30px"/>
-                         <p>{message[1]}</p>
-                </li>
-
-        ))
-
         return (
             <div id="frame">
                 <div id="sidepanel">
@@ -183,15 +218,20 @@ class Chat extends Component {
                     </div>
                     <div id="bottom-bar">
                         <form onSubmit={this.onSubmitAdd}>
-                        <button id="addcontact" ><i className="fa fa-user-plus fa-fw" aria-hidden="true"></i> <span>Add chat</span>
+                        <button id="addcontact" ><i className="fa fa-plus-square fa-fw" aria-hidden="true"></i> <span>Add chat</span>
                         </button>
                         </form>
+                        <form onSubmit={this.onSubmitRemove}>
+                        <button id="settings"><i className="fa fa-minus-square fa-fw" aria-hidden="true"></i>
+                            <span>Remove chat</span></button>
+                        </form>
+
                     </div>
                 </div>
                 <div className="content">
                     <div className="messages">
                         <ul id="all_messages">
-                            {messages}
+                            {this.createMessages()}
                         </ul>
                     </div>
 
