@@ -1,6 +1,6 @@
 import os
 from mongoengine import connect
-from flask import Flask
+from flask import Flask, render_template
 from flask_restful import Api
 from flask_jwt_extended import JWTManager, get_jwt_identity
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
@@ -21,6 +21,10 @@ socketio = SocketIO(app, cors_allowed_origins="*")#, manage_session=False)
 
 login_manager = LoginManager()
 
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @socketio.on('connect')
 def connect_handler():
