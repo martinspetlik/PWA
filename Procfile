@@ -1,3 +1,1 @@
-web: npm run dist && npm run gunicorn
-server: npm run gunicorn
-webpackdev: npm start
+web: gunicorn -k eventlet --no-sendfile app:app
