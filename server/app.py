@@ -21,7 +21,7 @@ from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_r
 from flask_login import LoginManager, login_required, current_user, login_user, logout_user
 
 
-app = Flask(__name__,  template_folder='client/public')
+app = Flask(__name__, static_folder='../client/build/static', template_folder="../client/build")
 app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
 #Session(app)
