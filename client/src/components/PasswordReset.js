@@ -48,13 +48,8 @@ class PasswordReset extends Component {
                 if (res.success) {
                     this.setState({message: AlertPrimary(res.message)});
 
-
                     setTimeout(function () {
-                        console.log('after');
                     }, 3000);
-
-
-                    //this.props.history.push("/")
 
                 } else {
                     this.setState({message: AlertDanger(res.message)});
@@ -81,7 +76,6 @@ class PasswordReset extends Component {
                 } else {
                     this.setState({message: AlertDanger(resData.message)});
                 }
-                console.log(JSON.stringify(resData))
 
             })
     }

@@ -33,8 +33,6 @@ class Login extends Component {
         }
 
         login(user).then(res => {
-            console.log(res)
-
             if (res.success) {
                 cookie.save("token", res.access_token, {path: "/", HttpOnly:true});
                 cookie.save("current_user_name", res.user_name, {path: "/", HttpOnly:true});
@@ -68,7 +66,6 @@ class Login extends Component {
     }
 
     getChats() {
-        console.log("cookie token " + cookie.load('token'))
         if (cookie.load('token')) {
 
             fetch("/chats", {
@@ -82,7 +79,6 @@ class Login extends Component {
                     cookie.save("chats", resData, {path: "/"});
                 })
 
-            console.log("cookie chats " + cookie.load("chats"))
         }
     }
 

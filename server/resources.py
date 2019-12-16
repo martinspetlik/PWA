@@ -177,9 +177,7 @@ class PasswordReset(Resource):
 class Chat(Resource):
     @login_required
     def delete(self, id):
-        print("chat id ", id)
         chat = Chat_db.objects(id=id).first()
-        print("chat ", chat)
 
         if not chat:
             return {"success": False, "message": "Chat not exist"}
@@ -208,13 +206,24 @@ class Chat(Resource):
                 status = "replies"
 
             message_dict[str(message.date_created)] = {"text": message.text, "status": status, "author": message.author.name}
-            print("message ", message)
 
-        print("message_dict ", message_dict)
         return message_dict
 
-    def post(self):
-        print("request.get_json() ", request.get_json())
+    @login_required
+    def post(self, id):
+        author = request.get_json().get('author')
+        text = request.get_json().get('text')
+
+        chat = Chat_db.objects(id=id).first()
+        user = User.objects(name=author).first()
+
+        if user not in chat.members:
+            return {"success": False, "message": "This user is not part of current chat"}
+
+        message = Message(author=user, chat=chat, text=text).save()
+
+        if message is not None:
+            return {"success": True, "message": "Message was sent"}
 
 
 class ChatAdd(Resource):
@@ -226,12 +235,8 @@ class ChatAdd(Resource):
 
         cur_user = User.objects(id=current_user["id"]).first()
 
-        print("members ", members)
-
         chat_members = []
         for member in members:
-            print("member[label] ", member["label"])
-            print("member[value]) ", member["value"])
             user = User.objects(name=member["label"], email=member["value"]).first()
 
             if user is None:
@@ -241,7 +246,6 @@ class ChatAdd(Resource):
 
         chat_members.append(cur_user)
 
-        print("chat memebrs ", chat_members)
 
         try:
             new_chat = ChatCreation.create_new(title=title, members=chat_members).save()
@@ -265,10 +269,6 @@ class ChatAdd(Resource):
             if user.id == current_user["id"]:
                 continue
             users.append({"label": user.name, "value": user.email})
-
-        print("users ", users)
-
-        #return [{"label": user.name, "value": user.email}]
 
         return users
 

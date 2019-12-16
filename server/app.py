@@ -1,4 +1,3 @@
-
 from mongoengine import connect
 from server.models.user import User
 from server.models.message import Message
@@ -18,7 +17,7 @@ from flask_session import Session
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required,
                                 get_jwt_identity, get_raw_jwt)
 
-from flask_cors import CORS
+#from flask_cors import CORS
 from flask_login import LoginManager, login_required, current_user, login_user, logout_user
 
 
@@ -34,21 +33,13 @@ login_manager = LoginManager()
 
 @socketio.on('connect')
 def connect_handler():
-    print("CONNECT EVENT")
-    print("current user ", current_user)
-    print("request session id ", request.cookies)
-
     cur_user = get_jwt_identity()
 
-    print("cur user ", cur_user)
     if current_user.is_authenticated:
-        print("CONNECT IS AUTHENTICATED")
         emit('my response',
              {'message': '{0} has joined'.format(current_user.name)},
              broadcast=True)
     else:
-        #disconnect()
-        print("CONNECT IS NOT AUTHENTICATED")
         return False  # not allowed here
 
 
@@ -58,7 +49,6 @@ def load_users():
     Load chat addition form
     :return:
     """
-    print("LOAD USERS")
     if current_user.is_authenticated:
         all_users = User.objects(email__nin=[current_user["email"]])
 
@@ -69,7 +59,6 @@ def load_users():
 
             users.append([user.name, user.email])
 
-        print("users ", users)
         emit('all_users', users)
     else:
         emit('all_users', False)
@@ -82,25 +71,16 @@ def load_messages(id):
     :param id: chat id
     :return: last 50 messages
     """
-    print("LOAD MESSAGES")
     if current_user.is_authenticated:
-        #print("chat ID ", id)
         chat = Chat.objects(id=id).first()
         chat_members_ids = [member.id for member in chat.members]
-        print("chat memebrs ids ", chat_members_ids)
-        print("current user id ", current_user["id"])
         if current_user["id"] not in chat_members_ids:
-            print("NOT IN IDS")
-            emit('all_messages', [False])
+            emit('all_messages', [False], room=id)
         else:
 
             messages = Message.objects(chat=id)
-            messages = list(messages)[:50]
-
+            messages = list(messages)[-50:]
             messages.sort(key=lambda x: x.id, reverse=False)
-
-            # print("messages ", messages)
-            # print("current user[name] ", current_user["name"])
 
             all_messages = []
             status = ""
@@ -113,7 +93,7 @@ def load_messages(id):
 
                 all_messages.append([message.author.name, message.text, str(message.date_created), status])
 
-            emit('all_messages', all_messages)#, room=id)
+            emit('all_messages', all_messages, room=id)
 
         # message_dict = {}
         # for message in messages:
@@ -128,7 +108,7 @@ def load_messages(id):
         #     print("message ", message)
     else:
         #print("LOAD messages not authenticated")
-        emit('all_messages', [False])#, room=id)
+        emit('all_messages', [False], room=id)
 
     # print("message_dict ", message_dict)
     # emit('all_messages', message_dict, broadcast=True, room=id)
@@ -140,12 +120,6 @@ def load_messages(id):
 
 @socketio.on("message")
 def handle_message(msg, room):
-
-    print("HANDLE MESSAGE")
-    print("message ", msg)
-    print("room ", room)
-    print("rooms ", rooms())
-
     user = User.objects(name=msg['author']).first()
     chat = Chat.objects(id=room).first()
     Message(author=user, chat=chat, text=msg['text']).save()
@@ -160,25 +134,18 @@ def handle_message(msg, room):
 
         message = [msg["author"], msg["text"], str(1), status]
 
-        # print("message ", message)
-        # print("msg ", msg)
-
         send(message, room=room)
     else:
-        print("HANDLE MESSAGE FALSE")
         send(False, room=room)
 
 
 @socketio.on('join')
 def on_join(data):
     if current_user.is_authenticated:
-        #print("JOIN ", data)
         username = data['username']
         room = data['room']
         join_room(room)
         send(username + ' has entered the room.', room=room)
-    else:
-        print("JOIN user auth ", current_user.is_authenticated)
 
 
 @socketio.on('leave')
@@ -248,17 +215,12 @@ def create_conversations():
 
 @login_manager.user_loader
 def load_user(user_id):
-    print("USER LOADER id ", user_id)
     user = User.objects(id=user_id).first()
-    print("user ", user)
     return user
 
 
 @login_manager.request_loader
 def load_user_from_request(request):
-
-    print("login manager request loader ", request.headers)
-
     token = request.headers.get('Authorization')
     if token:
         token = token.replace('Bearer ', '', 1)
@@ -286,12 +248,8 @@ def renew_database():
 
     user4 = User(name="user4", email='martin.spetlik@tul.cz', password=generate_password_hash("test", method='sha256')).save()
 
-    print("user1 ", user1)
-
     chat1 = ChatCreation.create_new(members=[user1, user2])
     chat2 = ChatCreation.create_new(members=[user1, user3])
-
-    print("chat1 ", chat1)
 
     Message(text="Zprava user1", author=user1, chat=chat1).save()
     Message(text="Zprava user2", author=user2, chat=chat1).save()
@@ -304,13 +262,12 @@ def renew_database():
 if __name__ == "__main__":
 
     app = create_app()
-    renew_database()
+    #renew_database()
     login_manager.init_app(app)
     #create_conversations()
-    print("app.config['TESTING']", app.config['TESTING'])
-    print("socket io ", socketio)
 
-    socketio.run(app, debug=True)
+
+    socketio.run(app)#, debug=True)
 
 
 

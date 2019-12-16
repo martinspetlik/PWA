@@ -29,19 +29,11 @@ class ChatAdd extends Component {
 
     handleChange = (selectedOption) => {
           this.setState({ members:selectedOption });
-          console.log(`Option selected:`, selectedOption);
     }
 
 
     onSubmit (e) {
         e.preventDefault()
-
-        console.log("title " + this.state.title)
-        console.log("members " + typeof(this.state.members))
-
-        console.log("members " + this.state.members[0])
-        console.log("members " + this.state.members[0]["label"])
-        console.log("members " + this.state.members[0]["value"])
 
         fetch("/chats/add", {
             method: 'POST',
@@ -86,12 +78,10 @@ class ChatAdd extends Component {
         })
         .then(response => response.json())
         .then(resData => {
-            console.log(resData)
             this.state.users = resData
             this.setState({ users: resData});
 
         })
-
     }
 
 

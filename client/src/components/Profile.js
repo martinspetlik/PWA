@@ -12,7 +12,7 @@ class Profile extends Component {
     }
 
     componentDidMount(){
-        console.log(cookie.load('token'))
+
         if (cookie.load('token')) {
 
             fetch("http://localhost:3000/profile", {
@@ -23,7 +23,7 @@ class Profile extends Component {
             })
                 .then(response => response.json())
                 .then(resData => {
-                    console.log(JSON.stringify(resData))
+
                     this.setState({name: resData.name, email: resData.email});
                 })
         }
@@ -33,7 +33,7 @@ class Profile extends Component {
     render () {
 
         const notLogin = (
-            AlertDanger("You are not loged in!")
+            AlertDanger("You are not logged in!")
         )
 
         const isLogin = (

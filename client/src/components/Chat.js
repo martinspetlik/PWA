@@ -6,6 +6,7 @@ import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import Avatar from 'react-avatar';
 import {AlertDanger, AlertPrimary} from "./Alerts";
+import NativeListener from 'react-native-listener';
 
 
 
@@ -84,24 +85,33 @@ class Chat extends Component {
 
     onSubmitAdd(e) {
         e.preventDefault()
-
         this.props.history.push("/chats/add")
     }
 
-    onSubmit (e) {
-        e.preventDefault()
-        this.setState({new_message: false})
+    handleMessage() {
+        // this.state.socket.send({'author': cookie.load('current_user_name'), 'text': this.state.mes},
+        //         this.state.chat_id)
 
         this.state.socket.send({'author': cookie.load('current_user_name'), 'text': this.state.mes},
-            this.state.chat_id)
+                this.state.chat_id)
 
-        this.state.socket.on("message", msg => {
-            this.setState(messages => ({
-                             messages: [...this.state.messages, msg]
-            }))
+    }
 
-            this.setState({new_message: true})
-        })
+    onSubmit (e) {
+        this.handleMessage()
+
+        //e.preventDefault()
+        //e.stopPropagation();
+
+
+        //}
+
+        //e.stopPropagation()
+        //e.stopImmediatePropagation()
+    }
+
+    componentDidUpdate() {
+         this.scrollToBottom();
     }
 
     componentDidMount(){
@@ -143,6 +153,8 @@ class Chat extends Component {
             this.state.name = cookie.load('current_user_name')
             this.state.chats = cookie.load("chats")
         }
+
+        this.scrollToBottom();
     }
 
     createContacts(){
@@ -206,7 +218,15 @@ class Chat extends Component {
         }
     }
 
+    scrollToBottom = () => {
+            this.messagesEnd.scrollIntoView({ behavior: "smooth" });
+    }
+
+
+
+
     render () {
+
         return (
             <div id="frame">
                 <div id="sidepanel">
@@ -239,11 +259,14 @@ class Chat extends Component {
                         <ul id="all_messages">
                             {this.createMessages()}
                         </ul>
+                        <div style={{ float:"left", clear: "both" }}
+                            ref={(el) => { this.messagesEnd = el; }}>
+                        </div>
                     </div>
 
                     <div className="message-input">
                         <div className="wrap">
-                             <form onSubmit={this.onSubmit}>
+                             <form onSubmit={(e) => this.onSubmit(e)}>
                                 <input type="text"
                                        name="mes"
                                        value={this.state.mes}
@@ -259,10 +282,11 @@ class Chat extends Component {
 
         )
 
-
-
-
     }
+
+
+
+
 }
 
 export default Chat

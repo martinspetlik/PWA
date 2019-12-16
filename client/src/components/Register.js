@@ -43,9 +43,6 @@ class Register extends Component {
                 this.props.history.push(`/`)
             }
 
-
-            console.log(this.message)
-
         })
     }
 

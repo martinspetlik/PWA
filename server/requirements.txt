@@ -1,0 +1,9 @@
+mongoengine
+flask
+flask_restful
+flask_jwt_extended
+flask_socketio
+flask_login
+flask_mail
+itsdangerous
+werkzeug
