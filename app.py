@@ -11,7 +11,6 @@ from server.models.message import Message
 from server.models.chat import Chat
 from server.models.chat import ChatCreation
 from server.models.revoked_tokens import RevokedTokens
-from server import resources
 
 app = Flask(__name__, static_folder="./client/dist", template_folder="./client")
 app.secret_key = 'super secret key'
@@ -171,6 +170,8 @@ def create_app():
     def check_if_token_in_blacklist(decrypted_token):
         jti = decrypted_token['jti']
         return True if RevokedTokens.objects(jti=jti) else False
+
+    import server.resources as resources
 
     api.add_resource(resources.UserRegistration, '/registration')
     api.add_resource(resources.UserLogin, '/')
