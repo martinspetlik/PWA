@@ -1,39 +1,30 @@
+import os
 from mongoengine import connect
+from flask import Flask
+from flask_restful import Api
+from flask_jwt_extended import JWTManager, get_jwt_identity
+from flask_socketio import SocketIO, send, emit, join_room, leave_room
+from flask_login import LoginManager, current_user
+
 from server.models.user import User
 from server.models.message import Message
 from server.models.chat import Chat
 from server.models.chat import ChatCreation
-
 from server.models.revoked_tokens import RevokedTokens
-
-from flask_restful import Resource
-
-from flask import Flask, request
-from flask_restful import Api
-from flask_jwt_extended import JWTManager
-from flask_socketio import SocketIO, send, disconnect, emit, join_room, leave_room, rooms
-#from flask_session import Session
-
-from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required,
-                                get_jwt_identity, get_raw_jwt)
-
-#from flask_cors import CORS
-from flask_login import LoginManager, login_required, current_user, login_user, logout_user
-
+from server import resources
 
 app = Flask(__name__, static_folder='../client/build/static', template_folder="../client/build")
 app.secret_key = 'super secret key'
-app.config['SESSION_TYPE'] = 'filesystem'
-#Session(app)
+# app.config['SESSION_TYPE'] = 'filesystem'
+# #Session(app)
 socketio = SocketIO(app, cors_allowed_origins="*")#, manage_session=False)
-#CORS(app)
+
 
 login_manager = LoginManager()
 
 
 @socketio.on('connect')
 def connect_handler():
-    cur_user = get_jwt_identity()
 
     if current_user.is_authenticated:
         emit('my response',
@@ -160,7 +151,14 @@ def on_leave(data):
 
 
 def create_app():
-    connect("chat")
+    database_url = os.environ.get("DATABASE_URL")
+
+    if database_url is not None:
+        host = database_url
+    else:
+        host = 'mongodb://127.0.0.1:27017'
+
+    connect("chat", host=host)
     api = Api(app)
 
     app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'
@@ -173,8 +171,6 @@ def create_app():
     def check_if_token_in_blacklist(decrypted_token):
         jti = decrypted_token['jti']
         return True if RevokedTokens.objects(jti=jti) else False
-
-    import resources
 
     api.add_resource(resources.UserRegistration, '/registration')
     api.add_resource(resources.UserLogin, '/')
