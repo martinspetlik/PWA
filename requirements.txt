@@ -9,3 +9,5 @@ flask_mail
 itsdangerous
 werkzeug
 gunicorn
+eventlet
+virtualenv
