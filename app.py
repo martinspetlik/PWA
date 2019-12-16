@@ -13,7 +13,7 @@ from server.models.chat import ChatCreation
 from server.models.revoked_tokens import RevokedTokens
 from server import resources
 
-app = Flask(__name__, static_folder='../client/build/static', template_folder="../client/build")
+app = Flask(__name__, static_folder="./client/dist", template_folder="./client")
 app.secret_key = 'super secret key'
 # app.config['SESSION_TYPE'] = 'filesystem'
 # #Session(app)
