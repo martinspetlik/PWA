@@ -255,15 +255,14 @@ def renew_database():
     Message(text="Zprava user2 chat2", author=user3, chat=chat2).save()
 
 
-if __name__ == "__main__":
-
-    app = create_app()
-    #renew_database()
-    login_manager.init_app(app)
-    #create_conversations()
-
-
-    socketio.run(app)#, debug=True)
+# if __name__ == "__main__":
+#
+#     app = create_app()
+#     renew_database()
+#     login_manager.init_app(app)
+#     #create_conversations()
+#
+#     socketio.run(app)#, debug=True)
 
 
 
