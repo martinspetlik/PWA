@@ -310,11 +310,14 @@ s = URLSafeTimedSerializer('73637979')
 mail = Mail(app)
 
 database_url = os.environ.get("DATABASE_URL")
+print("database url ", database_url)
 
 if database_url is not None:
     host = database_url
 else:
     host = 'mongodb://127.0.0.1:27017'
+
+print("database host ", host)
 
 connect("chat", host=host)
 api = Api(app)
@@ -330,26 +333,27 @@ def check_if_token_in_blacklist(decrypted_token):
     jti = decrypted_token['jti']
     return True if RevokedTokens.objects(jti=jti) else False
 
-api.add_resource(UserRegistration, '/registration')
-api.add_resource(UserLogin, '/')
-#api.add_resource(resources.UserProfile, '/profile')
-api.add_resource(PasswordResetEmail, '/reset')
-api.add_resource(PasswordReset, '/reset/<token>')
+# api.add_resource(UserRegistration, '/registration')
+# api.add_resource(UserLogin, '/')
+# #api.add_resource(resources.UserProfile, '/profile')
+# api.add_resource(PasswordResetEmail, '/reset')
+# api.add_resource(PasswordReset, '/reset/<token>')
+#
+# api.add_resource(Chats, '/chats')
+# api.add_resource(Chat, '/chat/<id>')
+# api.add_resource(ChatAdd, '/chats/add')
+#
+# api.add_resource(UserLogoutAccess, '/logout')
 
-api.add_resource(Chats, '/chats')
-api.add_resource(Chat, '/chat/<id>')
-api.add_resource(ChatAdd, '/chats/add')
-
-api.add_resource(UserLogoutAccess, '/logout')
 app.config.from_object('config.config.ProductionConfig')
 app.config['SECRET_KEY'] = '9OLWxND4o83j4K4iuopO'
 
 login_manager.init_app(app)
 socketio.run(app)
 
-# @app.route('/')
-# def index():
-#     return render_template('index.html')
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @socketio.on('connect')
 def connect_handler():
