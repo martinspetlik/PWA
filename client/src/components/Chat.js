@@ -25,7 +25,7 @@ class Chat extends Component {
             chat_id: '',
             new_message: false,
             redirect: '',
-            socket: openSocket('/')
+            socket: openSocket('wss://pwachat2.herokuapp.com')
 
         }
 
