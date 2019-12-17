@@ -351,7 +351,7 @@ app.config.from_object('config.config.ProductionConfig')
 app.config['SECRET_KEY'] = '9OLWxND4o83j4K4iuopO'
 
 login_manager.init_app(app)
-socketio.run(app)
+#socketio.run(app)
 
 @app.route('/')
 def index():
