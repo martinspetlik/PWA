@@ -320,6 +320,8 @@ else:
 print("database host ", host)
 
 connect("chat", host=host)
+
+print("connected")
 api = Api(app)
 
 app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'
