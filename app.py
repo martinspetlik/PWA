@@ -31,6 +31,7 @@ from server.models.chat import ChatCreation
 from server.models.message import Message
 
 
+
 class UserRegistration(Resource):
 
     def post(self):
@@ -330,22 +331,24 @@ jwt = JWTManager(app)
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 
+
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
     jti = decrypted_token['jti']
     return True if RevokedTokens.objects(jti=jti) else False
 
-api.add_resource(UserRegistration, '/registration')
-api.add_resource(UserLogin, '/')
-#api.add_resource(resources.UserProfile, '/profile')
-api.add_resource(PasswordResetEmail, '/reset')
-api.add_resource(PasswordReset, '/reset/<token>')
 
-api.add_resource(Chats, '/chats')
-api.add_resource(Chat, '/chat/<id>')
-api.add_resource(ChatAdd, '/chats/add')
-
-api.add_resource(UserLogoutAccess, '/logout')
+# api.add_resource(UserRegistration, '/registration')
+# api.add_resource(UserLogin, '/')
+# #api.add_resource(resources.UserProfile, '/profile')
+# api.add_resource(PasswordResetEmail, '/reset')
+# api.add_resource(PasswordReset, '/reset/<token>')
+#
+# api.add_resource(Chats, '/chats')
+# api.add_resource(Chat, '/chat/<id>')
+# api.add_resource(ChatAdd, '/chats/add')
+#
+# api.add_resource(UserLogoutAccess, '/logout')
 
 app.config.from_object('config.config.ProductionConfig')
 app.config['SECRET_KEY'] = '9OLWxND4o83j4K4iuopO'
@@ -356,6 +359,36 @@ login_manager.init_app(app)
 # @app.route('/')
 # def index():
 #     return render_template('index.html')
+
+
+@app.route('/registration', methods=['POST'])
+def post_registration():
+    email = request.get_json().get('email')
+    name = request.get_json().get('name')
+    password = request.get_json().get('password')
+
+    if password == "":
+        return jsonify({"success": False, "message": 'Empty password'})
+
+    user = User.objects(email=email).first()  # if this returns a user, then the email already exists in database
+    user_name_exist = User.objects(name=name).first()
+
+    if user:  # if a user is found, we want to redirect back to signup page so user can try again
+        return jsonify({"success": False, "message": 'User with this email address already exists', "email": email})
+
+    if user_name_exist:
+        return jsonify({"success": False, "message": 'User with this name already exists', "email": email})
+
+    try:
+        # create new user with the form data. Hash the password so plaintext version isn't saved.
+        user = User(email=email, name=name, password=generate_password_hash(password, method='sha256')).save()
+
+    except ValidationError as err:
+        return jsonify({"success": False, "message": err.message})
+
+    return jsonify({"success": True, "message": 'email ' + user.email + ' successfully registered'})
+
+
 
 @socketio.on('connect')
 def connect_handler():
