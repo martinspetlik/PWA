@@ -6,7 +6,10 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: ['babel-loader']
+        use: ['babel-loader'],
+        options: {
+         cacheDirectory: true,
+         presets: ['react', 'es2015', 'stage-3']}
       },
 	  {
         test: /\.css$/,

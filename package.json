@@ -6,7 +6,7 @@
   "npm": "6.9.0"
  },
  "scripts": {
-  "heroku-postbuild": "cd client && npm install --dev && npm run heroku-postbuild"
+  "heroku-postbuild": "cd client && npm install --save-dev babel-cli babel-preset-react && npm run heroku-postbuild"
  },
  "dependencies": {},
  "devDependencies": {}
