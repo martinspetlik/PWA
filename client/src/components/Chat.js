@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import cookie from 'react-cookies';
 import openSocket from 'socket.io-client'
+import io from 'socket.io-client'
 import './chat.css';
 import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css';
@@ -25,7 +26,7 @@ class Chat extends Component {
             chat_id: '',
             new_message: false,
             redirect: '',
-            socket: openSocket('wss://pwachat2.herokuapp.com')
+            socket: io('wss://pwachat2.herokuapp.com')
 
         }
 
