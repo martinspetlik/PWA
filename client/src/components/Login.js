@@ -6,8 +6,8 @@ import cookie from 'react-cookies';
 
 
 class Login extends Component {
-    constructor() {
-        super()
+    constructor(props) {
+        super(props)
         this.state = {
             email: '',
             password: '',
@@ -17,10 +17,20 @@ class Login extends Component {
 
         this.onChange = this.onChange.bind(this)
         this.onSubmit = this.onSubmit.bind(this)
+
     }
 
     onChange (e) {
         this.setState({ [e.target.name]: e.target.value })
+    }
+
+    componentDidMount() {
+        const params = new URLSearchParams(this.props.location.search);
+        const token = params.get('token');
+
+        if (token !== null) {
+            this.props.history.push("/reset/" + token)
+        }
     }
 
 
@@ -33,25 +43,23 @@ class Login extends Component {
         }
 
         login(user).then(res => {
+            console.log("res " + res)
             if (res.success) {
                 cookie.save("token", res.access_token, {path: "/", HttpOnly:true});
                 cookie.save("current_user_name", res.user_name, {path: "/", HttpOnly:true});
 
-                //while (cookie.load("chats") === undefined) {
-                    this.getChats()
+                this.getChats()
 
-                    if (cookie.load("chats")) {
-                        if (cookie.load("chats").length === 0) {
-                           this.props.history.push("/chats")
-                        }
-                        Object.keys(cookie.load("chats")).map(key => (
-                            this.props.history.push("/chat/" + cookie.load("chats")[key]["id"])
-                        ))
+                if (cookie.load("chats") === undefined) {
+                    this.props.history.push("/chats")
+                } else {
+                    if (cookie.load("chats").length === 0) {
+                        this.props.history.push("/chats")
                     }
-
-                    //setTimeout(null,100)
-
-                // }
+                    Object.keys(cookie.load("chats")).map(key => (
+                        this.props.history.push("/chat/" + cookie.load("chats")[key]["id"])
+                    ))
+                }
 
             } else {
 
@@ -89,14 +97,6 @@ class Login extends Component {
                     <div className="col-md-6 mt-5 mx-auto">
 
                         {this.state.message}
-
-                        {/*<GoogleLogin*/}
-                            {/*clientId="9200143057-icc83i692fcceah2u1jljtd1cuku5ujn.apps.googleusercontent.com"*/}
-                            {/*buttonText="Login"*/}
-                            {/*onSuccess={responseGoogle}*/}
-                            {/*onFailure={responseGoogle}*/}
-                            {/*cookiePolicy={'single_host_origin'}*/}
-                        {/*/>*/}
 
                         <form noValidate onSubmit={this.onSubmit}>
                             <h1 className="h3 mb-3 font-weight-normal">Please sign in</h1>

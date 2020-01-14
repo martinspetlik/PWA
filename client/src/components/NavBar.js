@@ -8,6 +8,27 @@ import cookie from 'react-cookies'
 
 class NavBar extends Component {
 
+    createLink() {
+        let path = "/chats"
+        if (cookie.load("chats") === undefined) {
+                        path = "/chats"
+                    } else {
+                        if (cookie.load("chats").length === 0) {
+                             path = "/chats"
+                        }
+                        console.log("cookie.load(chats).length " + cookie.load("chats").length)
+                        Object.keys(cookie.load("chats")).map(key => (
+                             path = "/chat/" + cookie.load("chats")[key]["id"]
+                        ))
+                    }
+
+
+        return (<Link to={path} className="nav-link">
+                        Chats
+               </Link>)
+    }
+
+
     render () {
         const loginRegLink = (
             <ul className="navbar-nav">
@@ -22,9 +43,10 @@ class NavBar extends Component {
         const userLink = (
             <ul className="navbar-nav">
                 <li className="nav-item">
-                    <Link to="/chats" className="nav-link">
-                        Chats
-                    </Link>
+
+                    {this.createLink()}
+
+
                 </li>
                 <li className="nav-item">
                     <Link to="/logout" className="nav-link">

@@ -152,6 +152,7 @@
   background-color: #243140;
 }
 #frame #sidepanel #contacts ul li.contact {
+  list-style-type: none !important;
   position: relative;
   padding: 10px 0 15px 0;
   font-size: 0.9em;

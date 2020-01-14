@@ -18,9 +18,9 @@ class Logout extends Component {
 
     }
 
-    componentDidMount() {
-        window.location.reload()
-    }
+    // componentDidMount() {
+    //     //window.location.reload()
+    // }
 
 
     render () {

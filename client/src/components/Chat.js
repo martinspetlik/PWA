@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import cookie from 'react-cookies';
 import openSocket from 'socket.io-client'
+import io from 'socket.io-client'
 import './chat.css';
 import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css';
@@ -25,7 +26,7 @@ class Chat extends Component {
             chat_id: '',
             new_message: false,
             redirect: '',
-            socket: openSocket('/')
+            socket: io('wss://pwachat2.herokuapp.com')
 
         }
 
@@ -78,7 +79,7 @@ class Chat extends Component {
                 if (res.success) {
                     cookie.remove("chats", {path: "/"})
                     this.props.history.push("/chats")
-                    window.location.reload()
+                    //window.location.reload()
                 }
             });
     }
@@ -99,15 +100,9 @@ class Chat extends Component {
 
     onSubmit (e) {
         this.handleMessage()
+        e.preventDefault()
+        this.setState({mes: ""})
 
-        //e.preventDefault()
-        //e.stopPropagation();
-
-
-        //}
-
-        //e.stopPropagation()
-        //e.stopImmediatePropagation()
     }
 
     componentDidUpdate() {
@@ -178,7 +173,6 @@ class Chat extends Component {
                 >
 
                     <div className="wrap">
-                        <span className="contact-status offline"></span>
                         <Avatar name={title} className="avatar" size="40px"/>
                         <div className="meta">
                             <p>{title}</p>
@@ -214,16 +208,12 @@ class Chat extends Component {
         const key = e.currentTarget.id
         if (this.state.chat_id !== key) {
             this.props.history.push("/chat/" + key)
-            window.location.reload()
         }
     }
 
     scrollToBottom = () => {
             this.messagesEnd.scrollIntoView({ behavior: "smooth" });
     }
-
-
-
 
     render () {
 

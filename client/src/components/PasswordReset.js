@@ -46,6 +46,7 @@ class PasswordReset extends Component {
             .then(response => response.json())
             .then(res => {
                 if (res.success) {
+
                     this.setState({message: AlertPrimary(res.message)});
 
                     setTimeout(function () {
@@ -67,7 +68,7 @@ class PasswordReset extends Component {
 
         fetch("/reset/" + resetToken, {
             method: 'GET',
-            mode: 'no-cors'
+            //mode: 'no-cors'
         })
             .then(response => response.json())
             .then(resData => {
@@ -111,7 +112,7 @@ class PasswordReset extends Component {
                             </div>
 
                             <button type="submit" className="btn btn-lg btn-primary btn-block">
-                                Send reset link to email
+                                Change password
                             </button>
                         </form>
 

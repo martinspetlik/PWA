@@ -1,4 +1,5 @@
 mongoengine
+mongoengine_goodjson
 flask
 flask_restful
 flask_jwt_extended
@@ -7,3 +8,6 @@ flask_login
 flask_mail
 itsdangerous
 werkzeug
+gunicorn
+eventlet
+virtualenv

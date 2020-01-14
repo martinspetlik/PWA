@@ -10,15 +10,12 @@
     "axios": "^0.18.1",
     "bootstrap": "^4.3.1",
     "jwt-decode": "^2.2.0",
-    "multi-select-react": "^0.1.8",
-    "multiselect-react-dropdown": "^1.2.6",
     "react": "^16.11.0",
     "react-avatar": "^3.7.0",
     "react-bootstrap": "^1.0.0-beta.14",
     "react-confirm-alert": "^2.4.1",
     "react-cookies": "^0.1.1",
     "react-dom": "^16.11.0",
-    "react-google-login": "^5.0.7",
     "react-native-listener": "^1.1.0",
     "react-router-dom": "^4.3.1",
     "react-scripts": "2.0.4",
@@ -27,21 +24,49 @@
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.0",
     "socketio-jwt": "^4.5.0"
+
+  },
+  "engines": {
+    "node": "10.16.3",
+    "npm": "6.9.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "dev": "react-scripts start",
+    "start": "webpack-dev-server - mode development - open - hot",
+    "build": "webpack --mode production",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "heroku-postbuild": "npm run build"
   },
   "eslintConfig": {
     "extends": "react-app"
   },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ],
-  "proxy": "http://127.0.0.1:5000"
+  "proxy": "http://localhost:5000",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/core": "^7.7.4",
+    "@babel/preset-env": "^7.7.4",
+    "@babel/preset-react": "^7.7.4",
+    "axios": "^0.19.0",
+    "babel-loader": "^8.0.6",
+    "html-webpack-plugin": "^3.2.0",
+    "semantic-ui-react": "^0.88.1",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.9.0"
+  }
 }
+
+

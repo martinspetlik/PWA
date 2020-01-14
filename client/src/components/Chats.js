@@ -14,6 +14,7 @@ class Chats extends Component {
         }
 
         this.onSubmitAdd = this.onSubmitAdd.bind(this)
+        this.getChats()
     }
 
     getChats() {
@@ -28,11 +29,9 @@ class Chats extends Component {
                 .then(response => response.json())
                 .then(resData => {
                     cookie.save("chats", resData, {path: "/"});
-
                     if (resData !== undefined && resData.length > 0) {
                         this.setState({path: '/chat/' + cookie.load("chats")[0]["id"]})
-                    } else {
-                        this.setState({path: '/'})
+                        this.props.history.push(this.state.path)
                     }
                 })
         }
